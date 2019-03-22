@@ -22,35 +22,39 @@ mongoose.connect(dbURL, (err) => {
 });
 
 let redisURL = {
-	hostname: 'localhost',
-	port: 6379,
+  hostname: 'localhost',
+  port: 6379,
 };
 
 let redisPASS;
 
-if(process.env.REDISCLOUD_URL){
-	redisURL = url.parse(process.env.REDISCLOUD_URL);
-	redisPASS = redisURL.auth.split(':')[1];
+if (process.env.REDISCLOUD_URL) {
+  redisURL = url.parse(process.env.REDISCLOUD_URL);
+  redisPASS = redisURL.auth.split(':')[1];
 }
 
 const router = require('./router.js');
 const app = express();
 app.use('/assets', express.static(path.resolve(`${__dirname}/../hosted/`)));
 app.use(favicon(`${__dirname}/../hosted/img/favicon.png`));
+app.disable('x-powered-by');
 app.use(compression());
 app.use(bodyParser.urlencoded({
   extended: true,
 }));
 app.use(session({
   key: 'sessionid',
-	store: new RedisStore({
-		host: redisURL.hostname,
-		port: redisURL.port,
-		pass: redisPASS,
-	}),
+  store: new RedisStore({
+    host: redisURL.hostname,
+    port: redisURL.port,
+    pass: redisPASS,
+  }),
   secret: 'Domo Arigato',
   resave: true,
   saveUninitialized: true,
+  cookie: {
+      httpOnly: true,
+  },
 }));
 app.engine('handlebars', expressHandlebars({ defaultLayout: 'main' }));
 app.set('view engine', 'handlebars');
