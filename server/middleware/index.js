@@ -5,6 +5,13 @@ const requiresLogin = (req, res, next) => {
   return next();
 };
 
+const requiresLogout = (req, res, next) => {
+  if (req.session.account) {
+    return res.redirect('/maker');
+  }
+  return next();
+};
+
 const requiresSecure = (req, res, next) => {
   if (req.headers['x-forwarded-proto'] !== 'https') {
     return res.redirect(`https://${req.hostname}${req.url}`);
